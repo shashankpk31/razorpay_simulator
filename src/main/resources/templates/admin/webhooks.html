@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webhooks - Razorpay Simulator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f3f4f6; min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); color: white; padding: 20px 32px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .logo-badge { background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 4px; font-size: 10px; }
+        .nav { display: flex; gap: 24px; }
+        .nav a { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 14px; font-weight: 500; }
+        .nav a:hover, .nav a.active { color: white; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 32px; }
+        .page-title { font-size: 24px; font-weight: 700; color: #111827; margin-bottom: 24px; }
+
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 16px;
+        }
+
+        .config-form {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .form-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px 14px;
+            border: 1.5px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-danger {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .btn-danger:hover {
+            background: #fecaca;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 13px;
+        }
+
+        th {
+            color: #6b7280;
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 11px;
+        }
+
+        .url-cell {
+            font-family: monospace;
+            font-size: 12px;
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .event-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #e0e7ff;
+            color: #3730a3;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-delivered { background: #dcfce7; color: #16a34a; }
+        .status-pending { background: #fef3c7; color: #d97706; }
+        .status-failed { background: #fee2e2; color: #dc2626; }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .alert-success {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #9ca3af;
+        }
+
+        .id-cell {
+            font-family: monospace;
+            font-size: 11px;
+        }
+
+        .payload-preview {
+            font-family: monospace;
+            font-size: 11px;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">💳 Razorpay Simulator <span class="logo-badge">v1.0</span></div>
+        <nav class="nav">
+            <a href="/admin">Dashboard</a>
+            <a href="/admin/orders">Orders</a>
+            <a href="/admin/payments">Payments</a>
+            <a href="/admin/refunds">Refunds</a>
+            <a href="/admin/webhooks" class="active">Webhooks</a>
+            <a href="/admin/test-cards">Test Cards</a>
+            <a href="/admin/docs">API Docs</a>
+        </nav>
+    </div>
+
+    <div class="container">
+        <h1 class="page-title">Webhooks</h1>
+
+        <div class="alert alert-success" th:if="${success}" th:text="${success}"></div>
+
+        <!-- Webhook Configurations -->
+        <div class="section">
+            <h2 class="section-title">Webhook Configurations</h2>
+            <form class="config-form" action="/admin/webhooks/config" method="POST">
+                <input type="text" name="webhookUrl" class="form-input" placeholder="https://your-app.com/webhooks/razorpay" required>
+                <input type="text" name="secret" class="form-input" placeholder="Webhook secret (optional)" style="max-width: 200px;">
+                <input type="text" name="events" class="form-input" placeholder="Events (* for all)" style="max-width: 150px;">
+                <button type="submit" class="btn btn-primary">Add Webhook</button>
+            </form>
+
+            <table style="margin-top: 20px;" th:if="${!configs.isEmpty()}">
+                <thead>
+                    <tr>
+                        <th>URL</th>
+                        <th>Events</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="config : ${configs}">
+                        <td class="url-cell" th:text="${config.webhookUrl}">https://...</td>
+                        <td><span class="event-badge" th:text="${config.events ?: '*'}">*</span></td>
+                        <td><span class="status-badge" th:classappend="${config.active} ? 'status-delivered' : 'status-pending'" th:text="${config.active} ? 'Active' : 'Inactive'">Active</span></td>
+                        <td>
+                            <form th:action="@{'/admin/webhooks/config/' + ${config.id} + '/delete'}" method="POST" style="display: inline;">
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="empty-state" th:if="${configs.isEmpty()}">
+                No webhook configurations. Add one above to receive webhooks.
+            </div>
+        </div>
+
+        <!-- Webhook Events -->
+        <div class="section">
+            <h2 class="section-title">Recent Events</h2>
+            <table th:if="${!events.isEmpty()}">
+                <thead>
+                    <tr>
+                        <th>Event ID</th>
+                        <th>Type</th>
+                        <th>URL</th>
+                        <th>Status</th>
+                        <th>Attempts</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="event : ${events}">
+                        <td class="id-cell" th:text="${event.id}">evt_xxx</td>
+                        <td><span class="event-badge" th:text="${event.eventType}">payment.captured</span></td>
+                        <td class="url-cell" th:text="${event.webhookUrl ?: 'N/A'}">https://...</td>
+                        <td>
+                            <span class="status-badge"
+                                  th:classappend="${event.delivered} ? 'status-delivered' : (${event.deliveryAttempts >= 3} ? 'status-failed' : 'status-pending')"
+                                  th:text="${event.delivered} ? 'Delivered' : (${event.deliveryAttempts >= 3} ? 'Failed' : 'Pending')">Status</span>
+                        </td>
+                        <td th:text="${event.deliveryAttempts}">0</td>
+                        <td>
+                            <form th:action="@{'/admin/webhooks/' + ${event.id} + '/retry'}" method="POST" style="display: inline;">
+                                <button type="submit" class="btn btn-primary btn-sm" th:disabled="${event.delivered}">Retry</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="empty-state" th:if="${events.isEmpty()}">
+                No webhook events yet. Events are created when payments are processed.
+            </div>
+        </div>
+    </div>
+</body>
+</html>

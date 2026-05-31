@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refunds - Razorpay Simulator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f3f4f6; min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); color: white; padding: 20px 32px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 20px; font-weight: 700; }
+        .nav { display: flex; gap: 24px; }
+        .nav a { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 14px; }
+        .nav a:hover, .nav a.active { color: white; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 32px; }
+        .page-title { font-size: 24px; font-weight: 700; color: #111827; margin-bottom: 24px; }
+        .section { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #e5e7eb; font-size: 13px; }
+        th { color: #6b7280; font-weight: 500; text-transform: uppercase; font-size: 11px; }
+        .id-cell { font-family: monospace; font-size: 12px; }
+        .status-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+        .status-pending { background: #fef3c7; color: #d97706; }
+        .status-processed { background: #dcfce7; color: #16a34a; }
+        .status-failed { background: #fee2e2; color: #dc2626; }
+        .amount-cell { font-weight: 600; font-family: monospace; }
+        .empty-state { text-align: center; padding: 40px; color: #9ca3af; }
+        .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 20px; }
+        .pagination a { padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px; text-decoration: none; color: #374151; font-size: 13px; }
+        .pagination a.active { background: #2563eb; color: white; border-color: #2563eb; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">💳 Razorpay Simulator</div>
+        <nav class="nav">
+            <a href="/admin">Dashboard</a>
+            <a href="/admin/orders">Orders</a>
+            <a href="/admin/payments">Payments</a>
+            <a href="/admin/refunds" class="active">Refunds</a>
+            <a href="/admin/webhooks">Webhooks</a>
+            <a href="/admin/test-cards">Test Cards</a>
+            <a href="/admin/docs">API Docs</a>
+        </nav>
+    </div>
+
+    <div class="container">
+        <h1 class="page-title">Refunds</h1>
+        <div class="section">
+            <table th:if="${!refunds.isEmpty()}">
+                <thead>
+                    <tr>
+                        <th>Refund ID</th>
+                        <th>Payment ID</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Speed</th>
+                        <th>Created</th>
+                        <th>Processed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="refund : ${refunds}">
+                        <td class="id-cell" th:text="${refund.id}">rfnd_xxx</td>
+                        <td class="id-cell" th:text="${refund.paymentId}">pay_xxx</td>
+                        <td class="amount-cell">₹<span th:text="${#numbers.formatDecimal(refund.amount / 100.0, 1, 2)}">0.00</span></td>
+                        <td><span class="status-badge" th:classappend="'status-' + ${refund.status}" th:text="${refund.status}">STATUS</span></td>
+                        <td th:text="${refund.speed}">normal</td>
+                        <td th:text="${#temporals.format(T(java.time.Instant).ofEpochSecond(refund.createdAt).atZone(T(java.time.ZoneId).systemDefault()).toLocalDateTime(), 'MMM dd, HH:mm')}">-</td>
+                        <td th:text="${refund.processedAt != null ? #temporals.format(T(java.time.Instant).ofEpochSecond(refund.processedAt).atZone(T(java.time.ZoneId).systemDefault()).toLocalDateTime(), 'MMM dd, HH:mm') : '-'}">-</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="empty-state" th:if="${refunds.isEmpty()}">No refunds yet.</div>
+
+            <div class="pagination" th:if="${refunds.totalPages > 1}">
+                <a th:href="@{/admin/refunds(page=${currentPage - 1})}" th:if="${currentPage > 0}">← Prev</a>
+                <a th:each="i : ${#numbers.sequence(0, refunds.totalPages - 1)}"
+                   th:href="@{/admin/refunds(page=${i})}"
+                   th:text="${i + 1}"
+                   th:classappend="${i == currentPage} ? 'active'">1</a>
+                <a th:href="@{/admin/refunds(page=${currentPage + 1})}" th:if="${currentPage < refunds.totalPages - 1}">Next →</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Razorpay Simulator - Checkout</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #1a1f36 0%, #0d1117 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .checkout-container {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+            width: 100%;
+            max-width: 420px;
+            overflow: hidden;
+        }
+
+        .checkout-header {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            padding: 24px;
+            color: white;
+        }
+
+        .simulator-badge {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .amount-display {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .order-id {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .checkout-body {
+            padding: 24px;
+        }
+
+        .payment-methods {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 16px;
+        }
+
+        .method-tab {
+            flex: 1;
+            padding: 12px 8px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            font-size: 12px;
+            font-weight: 500;
+            color: #6b7280;
+        }
+
+        .method-tab:hover {
+            border-color: #2563eb;
+            color: #2563eb;
+        }
+
+        .method-tab.active {
+            border-color: #2563eb;
+            background: #eff6ff;
+            color: #2563eb;
+        }
+
+        .method-tab .icon {
+            font-size: 20px;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .payment-form {
+            display: none;
+        }
+
+        .payment-form.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: #9ca3af;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 8px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .test-cards-section {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .test-cards-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7280;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .test-card-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 12px;
+        }
+
+        .test-card-item:last-child {
+            border-bottom: none;
+        }
+
+        .test-card-number {
+            font-family: monospace;
+            color: #374151;
+        }
+
+        .test-card-result {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .test-card-result.success {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .test-card-result.fail {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .secure-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 12px;
+            color: #6b7280;
+            font-size: 11px;
+            border-top: 1px solid #e5e7eb;
+            margin-top: 16px;
+        }
+
+        .upi-apps {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .upi-app {
+            padding: 12px;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .upi-app:hover {
+            border-color: #2563eb;
+        }
+
+        .upi-app.selected {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .upi-app-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .upi-app-name {
+            font-size: 10px;
+            color: #6b7280;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 16px 0;
+            color: #9ca3af;
+            font-size: 12px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e5e7eb;
+        }
+
+        .divider span {
+            padding: 0 12px;
+        }
+
+        @media (max-width: 480px) {
+            .checkout-container {
+                border-radius: 0;
+            }
+
+            .payment-methods {
+                flex-wrap: wrap;
+            }
+
+            .method-tab {
+                flex: 1 1 45%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="checkout-container">
+        <div class="checkout-header">
+            <div class="simulator-badge">🧪 SIMULATOR MODE</div>
+            <div class="amount-display" th:text="${amount}">₹100.00</div>
+            <div class="order-id">Order: <span th:text="${order.id}">order_xxx</span></div>
+        </div>
+
+        <div class="checkout-body">
+            <div class="payment-methods">
+                <div class="method-tab active" data-method="card" onclick="switchMethod('card')">
+                    <span class="icon">💳</span>
+                    Card
+                </div>
+                <div class="method-tab" data-method="upi" onclick="switchMethod('upi')">
+                    <span class="icon">📱</span>
+                    UPI
+                </div>
+                <div class="method-tab" data-method="netbanking" onclick="switchMethod('netbanking')">
+                    <span class="icon">🏦</span>
+                    Bank
+                </div>
+                <div class="method-tab" data-method="wallet" onclick="switchMethod('wallet')">
+                    <span class="icon">👛</span>
+                    Wallet
+                </div>
+            </div>
+
+            <!-- Card Payment Form -->
+            <form class="payment-form active" id="card-form" th:action="@{'/checkout/' + ${order.id} + '/pay'}" method="POST">
+                <input type="hidden" name="method" value="card">
+
+                <div class="form-group">
+                    <label class="form-label">Card Number</label>
+                    <input type="text" name="cardNumber" class="form-input" placeholder="4111 1111 1111 1111"
+                           maxlength="19" oninput="formatCardNumber(this)" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Expiry</label>
+                        <input type="text" name="cardExpiry" class="form-input" placeholder="MM/YY"
+                               maxlength="5" oninput="formatExpiry(this)" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">CVV</label>
+                        <input type="password" name="cardCvv" class="form-input" placeholder="•••"
+                               maxlength="4" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Name on Card</label>
+                    <input type="text" name="cardName" class="form-input" placeholder="John Doe" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-input" placeholder="john@example.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="tel" name="contact" class="form-input" placeholder="+91 9876543210" required>
+                </div>
+
+                <button type="submit" class="submit-btn">Pay <span th:text="${amount}">₹100.00</span></button>
+            </form>
+
+            <!-- UPI Payment Form -->
+            <form class="payment-form" id="upi-form" th:action="@{'/checkout/' + ${order.id} + '/pay'}" method="POST">
+                <input type="hidden" name="method" value="upi">
+
+                <div class="form-group">
+                    <label class="form-label">UPI ID</label>
+                    <input type="text" name="vpa" class="form-input" placeholder="yourname@upi" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-input" placeholder="john@example.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="tel" name="contact" class="form-input" placeholder="+91 9876543210" required>
+                </div>
+
+                <button type="submit" class="submit-btn">Pay <span th:text="${amount}">₹100.00</span></button>
+
+                <div class="test-cards-section">
+                    <div class="test-cards-title">💡 Test UPI IDs</div>
+                    <div class="test-card-item">
+                        <span class="test-card-number">success@upi</span>
+                        <span class="test-card-result success">SUCCESS</span>
+                    </div>
+                    <div class="test-card-item">
+                        <span class="test-card-number">fail@upi</span>
+                        <span class="test-card-result fail">FAILURE</span>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Netbanking Form -->
+            <form class="payment-form" id="netbanking-form" th:action="@{'/checkout/' + ${order.id} + '/pay'}" method="POST">
+                <input type="hidden" name="method" value="netbanking">
+
+                <div class="form-group">
+                    <label class="form-label">Select Bank</label>
+                    <select name="bank" class="form-select" required>
+                        <option value="">-- Select Bank --</option>
+                        <option th:each="bank : ${banks}" th:value="${bank.code()}" th:text="${bank.name()}"></option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-input" placeholder="john@example.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="tel" name="contact" class="form-input" placeholder="+91 9876543210" required>
+                </div>
+
+                <button type="submit" class="submit-btn">Pay <span th:text="${amount}">₹100.00</span></button>
+            </form>
+
+            <!-- Wallet Form -->
+            <form class="payment-form" id="wallet-form" th:action="@{'/checkout/' + ${order.id} + '/pay'}" method="POST">
+                <input type="hidden" name="method" value="wallet">
+
+                <div class="form-group">
+                    <label class="form-label">Select Wallet</label>
+                    <select name="wallet" class="form-select" required>
+                        <option value="">-- Select Wallet --</option>
+                        <option th:each="wallet : ${wallets}" th:value="${wallet.code()}" th:text="${wallet.name()}"></option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-input" placeholder="john@example.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="tel" name="contact" class="form-input" placeholder="+91 9876543210" required>
+                </div>
+
+                <button type="submit" class="submit-btn">Pay <span th:text="${amount}">₹100.00</span></button>
+            </form>
+
+            <!-- Test Cards Reference (shown only for card method) -->
+            <div class="test-cards-section" id="test-cards-info">
+                <div class="test-cards-title">🧪 Test Cards</div>
+                <div th:each="card : ${testCards}" class="test-card-item" th:if="${card.simulateResult.name() == 'SUCCESS' || card.simulateResult.name() == 'CARD_DECLINED' || card.simulateResult.name() == 'INSUFFICIENT_FUNDS'}">
+                    <span class="test-card-number" th:text="${card.cardNumber}">4111...</span>
+                    <span class="test-card-result"
+                          th:classappend="${card.simulateResult.name() == 'SUCCESS'} ? 'success' : 'fail'"
+                          th:text="${card.simulateResult.name()}">SUCCESS</span>
+                </div>
+            </div>
+
+            <div class="secure-badge">
+                🔒 Secured by Razorpay Simulator
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchMethod(method) {
+            // Update tabs
+            document.querySelectorAll('.method-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`[data-method="${method}"]`).classList.add('active');
+
+            // Update forms
+            document.querySelectorAll('.payment-form').forEach(form => {
+                form.classList.remove('active');
+            });
+            document.getElementById(`${method}-form`).classList.add('active');
+
+            // Show/hide test cards info
+            document.getElementById('test-cards-info').style.display =
+                method === 'card' ? 'block' : 'none';
+        }
+
+        function formatCardNumber(input) {
+            let value = input.value.replace(/\s/g, '').replace(/\D/g, '');
+            let formatted = value.match(/.{1,4}/g)?.join(' ') || value;
+            input.value = formatted;
+        }
+
+        function formatExpiry(input) {
+            let value = input.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2, 4);
+            }
+            input.value = value;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Cards - Razorpay Simulator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f3f4f6; min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); color: white; padding: 20px 32px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .logo-badge { background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 4px; font-size: 10px; }
+        .nav { display: flex; gap: 24px; }
+        .nav a { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 14px; font-weight: 500; }
+        .nav a:hover, .nav a.active { color: white; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 32px; }
+        .page-title { font-size: 24px; font-weight: 700; color: #111827; margin-bottom: 8px; }
+        .page-subtitle { font-size: 14px; color: #6b7280; margin-bottom: 24px; }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .test-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .card-network {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .card-type {
+            font-size: 11px;
+            color: #6b7280;
+            text-transform: uppercase;
+        }
+
+        .result-badge {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .result-badge.success { background: #dcfce7; color: #16a34a; }
+        .result-badge.failure { background: #fee2e2; color: #dc2626; }
+        .result-badge.otp { background: #fef3c7; color: #d97706; }
+        .result-badge.timeout { background: #e0e7ff; color: #4338ca; }
+
+        .card-number {
+            font-family: monospace;
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            padding: 8px;
+            background: #f9fafb;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .card-number:hover {
+            background: #f3f4f6;
+        }
+
+        .card-number:active {
+            background: #e5e7eb;
+        }
+
+        .card-details {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 12px;
+        }
+
+        .card-description {
+            font-size: 13px;
+            color: #374151;
+            padding-top: 12px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .info-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .info-box h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 8px;
+        }
+
+        .info-box p {
+            font-size: 13px;
+            color: #3b82f6;
+        }
+
+        .info-box code {
+            background: rgba(0,0,0,0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .copied-toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #111827;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">💳 Razorpay Simulator <span class="logo-badge">v1.0</span></div>
+        <nav class="nav">
+            <a href="/admin">Dashboard</a>
+            <a href="/admin/orders">Orders</a>
+            <a href="/admin/payments">Payments</a>
+            <a href="/admin/refunds">Refunds</a>
+            <a href="/admin/webhooks">Webhooks</a>
+            <a href="/admin/test-cards" class="active">Test Cards</a>
+            <a href="/admin/docs">API Docs</a>
+        </nav>
+    </div>
+
+    <div class="container">
+        <h1 class="page-title">Test Cards</h1>
+        <p class="page-subtitle">Use these card numbers for testing. Click to copy. CVV: any 3 digits. Expiry: any future date.</p>
+
+        <div class="info-box">
+            <h3>💡 Quick Reference</h3>
+            <p>
+                <strong>CVV:</strong> Use any 3 digits (e.g., <code>123</code>)<br>
+                <strong>Expiry:</strong> Use any future date (e.g., <code>12/30</code>)<br>
+                <strong>Name:</strong> Use any name
+            </p>
+        </div>
+
+        <div class="cards-grid">
+            <div th:each="card : ${testCards}" class="test-card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-network" th:text="${card.cardNetwork}">Visa</div>
+                        <div class="card-type" th:text="${card.cardType}">Credit</div>
+                    </div>
+                    <span class="result-badge"
+                          th:classappend="${card.simulateResult.name() == 'SUCCESS'} ? 'success' : (${card.simulateResult.name() == 'OTP_REQUIRED'} ? 'otp' : (${card.simulateResult.name() == 'TIMEOUT'} ? 'timeout' : 'failure'))"
+                          th:text="${card.simulateResult}">SUCCESS</span>
+                </div>
+
+                <div class="card-number" th:text="${card.cardNumber}" onclick="copyCard(this)">4111 1111 1111 1111</div>
+
+                <div class="card-details">
+                    <span th:text="'Issuer: ' + ${card.issuer}">Issuer: Test Bank</span>
+                </div>
+
+                <div class="card-description" th:text="${card.description}">Description</div>
+
+                <div th:if="${card.failureCode != null}" class="card-description" style="color: #dc2626;">
+                    Error: <span th:text="${card.failureCode}">ERROR</span> - <span th:text="${card.failureDescription}">Description</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-box" style="margin-top: 24px; background: #fef3c7; border-color: #fcd34d;">
+            <h3 style="color: #92400e;">🔐 UPI Test IDs</h3>
+            <p style="color: #b45309;">
+                <code>success@upi</code> - Always succeeds<br>
+                <code>fail@upi</code> - Always fails<br>
+                Any other UPI ID will succeed by default
+            </p>
+        </div>
+    </div>
+
+    <div class="copied-toast" id="toast">✓ Card number copied!</div>
+
+    <script>
+        function copyCard(element) {
+            const cardNumber = element.textContent.replace(/\s/g, '');
+            navigator.clipboard.writeText(cardNumber);
+
+            const toast = document.getElementById('toast');
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 2000);
+        }
+    </script>
+</body>
+</html>

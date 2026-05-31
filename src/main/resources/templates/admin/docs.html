@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Documentation - Razorpay Simulator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f3f4f6; min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); color: white; padding: 20px 32px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .logo-badge { background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 4px; font-size: 10px; }
+        .nav { display: flex; gap: 24px; }
+        .nav a { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 14px; font-weight: 500; }
+        .nav a:hover, .nav a.active { color: white; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 32px; }
+        .page-title { font-size: 24px; font-weight: 700; color: #111827; margin-bottom: 8px; }
+        .page-subtitle { font-size: 14px; color: #6b7280; margin-bottom: 32px; }
+
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .endpoint {
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .endpoint:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .endpoint-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .method-badge {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .method-get { background: #dcfce7; color: #16a34a; }
+        .method-post { background: #e0e7ff; color: #4338ca; }
+        .method-delete { background: #fee2e2; color: #dc2626; }
+
+        .endpoint-path {
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            color: #374151;
+        }
+
+        .endpoint-description {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 12px;
+        }
+
+        .code-block {
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 16px;
+            overflow-x: auto;
+        }
+
+        .code-block pre {
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+
+        .code-block .comment { color: #64748b; }
+        .code-block .string { color: #a5d6ff; }
+        .code-block .number { color: #79c0ff; }
+        .code-block .key { color: #7ee787; }
+
+        .info-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .info-box h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 8px;
+        }
+
+        .info-box p, .info-box ul {
+            font-size: 13px;
+            color: #3b82f6;
+        }
+
+        .info-box code {
+            background: rgba(0,0,0,0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+
+        .warning-box {
+            background: #fef3c7;
+            border: 1px solid #fcd34d;
+        }
+
+        .warning-box h3 { color: #92400e; }
+        .warning-box p { color: #b45309; }
+
+        .toc {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .toc-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 12px;
+        }
+
+        .toc-list {
+            list-style: none;
+        }
+
+        .toc-list li {
+            margin-bottom: 8px;
+        }
+
+        .toc-list a {
+            color: #3b82f6;
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .toc-list a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">💳 Razorpay Simulator <span class="logo-badge">v1.0</span></div>
+        <nav class="nav">
+            <a href="/admin">Dashboard</a>
+            <a href="/admin/orders">Orders</a>
+            <a href="/admin/payments">Payments</a>
+            <a href="/admin/refunds">Refunds</a>
+            <a href="/admin/webhooks">Webhooks</a>
+            <a href="/admin/test-cards">Test Cards</a>
+            <a href="/admin/docs" class="active">API Docs</a>
+        </nav>
+    </div>
+
+    <div class="container">
+        <h1 class="page-title">API Documentation</h1>
+        <p class="page-subtitle">Drop-in replacement for Razorpay API. Just change the base URL.</p>
+
+        <div class="info-box">
+            <h3>🔑 Authentication</h3>
+            <p>
+                <strong>Key ID:</strong> <code>rzp_test_simulator</code><br>
+                <strong>Key Secret:</strong> <code>sim_secret_key_12345</code><br><br>
+                Use HTTP Basic Auth with Key ID as username and Key Secret as password.
+            </p>
+        </div>
+
+        <div class="info-box warning-box">
+            <h3>⚠️ Production Migration</h3>
+            <p>
+                To switch to production Razorpay, simply change:<br>
+                <code>http://localhost:9000</code> → <code>https://api.razorpay.com</code><br><br>
+                And update your API keys to production keys from Razorpay dashboard.
+            </p>
+        </div>
+
+        <div class="toc">
+            <div class="toc-title">Quick Links</div>
+            <ul class="toc-list">
+                <li><a href="#orders">Orders API</a></li>
+                <li><a href="#payments">Payments API</a></li>
+                <li><a href="#refunds">Refunds API</a></li>
+                <li><a href="#webhooks">Webhooks</a></li>
+                <li><a href="#checkout">Checkout UI</a></li>
+            </ul>
+        </div>
+
+        <!-- Orders API -->
+        <div class="section" id="orders">
+            <h2 class="section-title">📦 Orders API</h2>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method-badge method-post">POST</span>
+                    <span class="endpoint-path">/v1/orders</span>
+                </div>
+                <p class="endpoint-description">Create a new order</p>
+                <div class="code-block">
+<pre><span class="comment"># Create an order</span>
+curl -X POST http://localhost:9000/v1/orders \
+  -u rzp_test_simulator:sim_secret_key_12345 \
+  -H "Content-Type: application/json" \
+  -d '{
+    <span class="key">"amount"</span>: <span class="number">10000</span>,
+    <span class="key">"currency"</span>: <span class="string">"INR"</span>,
+    <span class="key">"receipt"</span>: <span class="string">"order_123"</span>
+  }'</pre>
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method-badge method-get">GET</span>
+                    <span class="endpoint-path">/v1/orders/{order_id}</span>
+                </div>
+                <p class="endpoint-description">Fetch an order by ID</p>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method-badge method-get">GET</span>
+                    <span class="endpoint-path">/v1/orders</span>
+                </div>
+                <p class="endpoint-description">Fetch all orders (supports pagination with skip & count)</p>
+            </div>
+        </div>
+
+        <!-- Payments API -->
+        <div class="section" id="payments">
+            <h2 class="section-title">💳 Payments API</h2>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method-badge method-get">GET</span>
+                    <span class="endpoint-path">/v1/payments/{payment_id}</span>
+                </div>
+                <p class="endpoint-description">Fetch a payment by ID</p>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method-badge method-post">POST</span>
+                    <span class="endpoint-path">/v1/payments/{payment_id}/capture</span>
+                </div>
+                <p class="endpoint-description">Capture an authorized payment</p>
+                <div class="code-block">
+<pre><span class="comment"># Capture a payment</span>
+curl -X POST http://localhost:9000/v1/payments/pay_xxx/capture \
+  -u rzp_test_simulator:sim_secret_key_12345 \
+  -H "Content-Type: application/json" \
+  -d '{
+    <span class="key">"amount"</span>: <span class="number">10000</span>
+  }'</pre>
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method-badge method-post">POST</span>
+                    <span class="endpoint-path">/v1/payments/{payment_id}/refund</span>
+                </div>
+                <p class="endpoint-description">Refund a payment (full or partial)</p>
+            </div>
+        </div>
+
+        <!-- Refunds API -->
+        <div class="section" id="refunds">
+            <h2 class="section-title">↩️ Refunds API</h2>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method-badge method-get">GET</span>
+                    <span class="endpoint-path">/v1/refunds/{refund_id}</span>
+                </div>
+                <p class="endpoint-description">Fetch a refund by ID</p>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method-badge method-get">GET</span>
+                    <span class="endpoint-path">/v1/refunds</span>
+                </div>
+                <p class="endpoint-description">Fetch all refunds</p>
+            </div>
+        </div>
+
+        <!-- Webhooks -->
+        <div class="section" id="webhooks">
+            <h2 class="section-title">🔔 Webhooks</h2>
+
+            <div class="info-box">
+                <h3>Supported Events</h3>
+                <ul>
+                    <li><code>payment.authorized</code> - Payment authorized (card blocked)</li>
+                    <li><code>payment.captured</code> - Payment captured (money received)</li>
+                    <li><code>payment.failed</code> - Payment failed</li>
+                    <li><code>order.paid</code> - Order fully paid</li>
+                    <li><code>refund.created</code> - Refund initiated</li>
+                    <li><code>refund.processed</code> - Refund completed</li>
+                </ul>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method-badge method-post">POST</span>
+                    <span class="endpoint-path">/v1/webhooks</span>
+                </div>
+                <p class="endpoint-description">Add a webhook configuration</p>
+                <div class="code-block">
+<pre><span class="comment"># Configure webhook URL</span>
+curl -X POST http://localhost:9000/v1/webhooks \
+  -H "Content-Type: application/json" \
+  -d '{
+    <span class="key">"url"</span>: <span class="string">"http://localhost:8089/webhooks/razorpay"</span>,
+    <span class="key">"secret"</span>: <span class="string">"my_webhook_secret"</span>,
+    <span class="key">"events"</span>: <span class="string">"*"</span>
+  }'</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Checkout UI -->
+        <div class="section" id="checkout">
+            <h2 class="section-title">🛒 Checkout UI</h2>
+
+            <div class="info-box">
+                <h3>Hosted Checkout</h3>
+                <p>
+                    Redirect users to the checkout page:<br>
+                    <code>http://localhost:9000/checkout/{order_id}</code><br><br>
+                    After payment, users are redirected to success/failure pages.
+                    The signature is provided for server-side verification.
+                </p>
+            </div>
+
+            <div class="code-block">
+<pre><span class="comment">// Example: Redirect to checkout after creating order</span>
+<span class="key">const</span> response = <span class="key">await</span> fetch(<span class="string">'http://localhost:9000/v1/orders'</span>, {
+  method: <span class="string">'POST'</span>,
+  headers: { <span class="string">'Content-Type'</span>: <span class="string">'application/json'</span> },
+  body: JSON.stringify({ amount: <span class="number">10000</span>, currency: <span class="string">'INR'</span> })
+});
+<span class="key">const</span> order = <span class="key">await</span> response.json();
+
+<span class="comment">// Redirect to checkout</span>
+window.location.href = <span class="string">`http://localhost:9000/checkout/</span>${order.id}<span class="string">`</span>;</pre>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

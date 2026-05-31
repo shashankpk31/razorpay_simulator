@@ -1,0 +1,34 @@
+# Render Blueprint - Razorpay Simulator
+# Separate deployment for payment testing simulator
+
+services:
+  - type: web
+    name: razorpay-simulator
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    region: oregon
+    plan: free
+    healthCheckPath: /admin
+    autoDeploy: true
+    envVars:
+      # Spring Boot Profile
+      - key: SPRING_PROFILES_ACTIVE
+        value: default
+
+      # JVM Memory Settings (512MB free tier)
+      - key: JAVA_OPTS
+        value: -Xmx256m -Xms128m
+
+      # Server Port
+      - key: SERVER_PORT
+        value: 9000
+
+      # Simulator Configuration
+      - key: RAZORPAY_SIMULATOR_AUTO_CAPTURE
+        value: "true"
+
+      # Razorpay API Credentials (for simulator)
+      - key: RAZORPAY_KEY_ID
+        value: rzp_test_simulator
+      - key: RAZORPAY_KEY_SECRET
+        value: sim_secret_key_12345

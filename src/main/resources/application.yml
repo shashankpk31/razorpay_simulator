@@ -1,0 +1,94 @@
+server:
+  port: 9000
+
+spring:
+  application:
+    name: razorpay-simulator
+
+  # H2 Database (embedded - no setup needed)
+  datasource:
+    url: jdbc:h2:file:./data/razorpay-sim;DB_CLOSE_ON_EXIT=FALSE;AUTO_RECONNECT=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+
+  # Thymeleaf Configuration
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+
+  # Jackson JSON
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+    serialization:
+      write-dates-as-timestamps: false
+
+# Razorpay Simulator Configuration
+razorpay:
+  simulator:
+    # API Keys (used for Basic Auth)
+    key-id: rzp_test_simulator
+    key-secret: sim_secret_key_12345
+
+    # Webhook Configuration
+    webhook:
+      secret: whsec_simulator_webhook_secret
+      retry-attempts: 3
+      retry-delay-ms: 5000
+
+    # Payment Processing Delays (simulate real-world latency)
+    delays:
+      payment-processing-ms: 1000
+      refund-processing-ms: 2000
+      webhook-delivery-ms: 500
+
+    # Auto-capture payments (like Razorpay's auto-capture feature)
+    auto-capture: true
+
+logging:
+  level:
+    com.simulator.razorpay: DEBUG
+    org.springframework.web: INFO
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+---
+# PostgreSQL profile (optional - for persistent storage)
+spring:
+  config:
+    activate:
+      on-profile: postgres
+
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/razorpay_sim}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  h2:
+    console:
+      enabled: false

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Failed - Razorpay Simulator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #1a1f36 0%, #0d1117 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .result-container {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+            width: 100%;
+            max-width: 420px;
+            overflow: hidden;
+            text-align: center;
+            padding: 40px 24px;
+        }
+
+        .failure-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            animation: shake 0.5s ease-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        .failure-icon svg {
+            width: 40px;
+            height: 40px;
+            color: white;
+        }
+
+        .failure-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .failure-message {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 24px;
+        }
+
+        .error-details {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .error-code {
+            font-size: 12px;
+            font-weight: 600;
+            color: #dc2626;
+            margin-bottom: 4px;
+        }
+
+        .error-description {
+            font-size: 13px;
+            color: #7f1d1d;
+        }
+
+        .payment-details {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .detail-value {
+            font-size: 13px;
+            font-weight: 500;
+            color: #111827;
+            font-family: monospace;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .action-btn {
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: transform 0.2s;
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+        }
+
+        .action-btn.secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .simulator-badge {
+            display: inline-block;
+            background: #fee2e2;
+            color: #dc2626;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-top: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="result-container">
+        <div class="failure-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </div>
+
+        <h1 class="failure-title">Payment Failed</h1>
+        <p class="failure-message">We couldn't process your payment. Please try again.</p>
+
+        <div class="error-details" th:if="${error != null or (payment != null and payment.errorCode != null)}">
+            <div class="error-code" th:if="${payment != null}" th:text="${payment.errorCode}">ERROR_CODE</div>
+            <div class="error-description" th:text="${error != null ? error : (payment != null ? payment.errorDescription : 'Unknown error')}">
+                Error description
+            </div>
+        </div>
+
+        <div class="payment-details">
+            <div class="detail-row">
+                <span class="detail-label">Order ID</span>
+                <span class="detail-value" th:text="${order.id}">order_xxx</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Amount</span>
+                <span class="detail-value" th:text="${amount}">₹100.00</span>
+            </div>
+            <div class="detail-row" th:if="${payment != null}">
+                <span class="detail-label">Payment ID</span>
+                <span class="detail-value" th:text="${payment.id}">pay_xxx</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Status</span>
+                <span class="detail-value" style="color: #dc2626;">FAILED</span>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <a th:href="@{'/checkout/' + ${order.id}}" class="action-btn primary">Try Again</a>
+            <a href="/admin" class="action-btn secondary">Dashboard</a>
+        </div>
+
+        <div class="simulator-badge">🧪 SIMULATED FAILURE</div>
+    </div>
+
+    <script th:inline="javascript">
+        // Send payment failure message to parent window (for popup integration)
+        if (window.opener) {
+            const paymentData = {
+                type: 'razorpay_payment_failed',
+                razorpay_order_id: /*[[${order.id}]]*/ 'order_xxx',
+                error: /*[[${error != null ? error : 'Payment failed'}]]*/ 'Payment failed'
+            };
+
+            // Send message to parent window
+            window.opener.postMessage(paymentData, '*');
+
+            // Show closing message
+            const container = document.querySelector('.failure-message');
+            if (container) {
+                setTimeout(() => {
+                    container.textContent = 'Returning to application...';
+                }, 1500);
+            }
+
+            // Close popup after 2 seconds
+            setTimeout(() => {
+                window.close();
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
